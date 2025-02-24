@@ -1,0 +1,27 @@
+const BookingForm = ({ doctor, slot, onBook }) => {
+  const [patientName, setPatientName] = useState("");
+  const [appointmentType, setAppointmentType] = useState("Routine Check-Up");
+
+  const handleSubmit = () => {
+    const appointment = {
+      doctorId: doctor._id,
+      date: `${selectedDate}T${slot}:00`,
+      duration: 30,
+      appointmentType,
+      patientName,
+    };
+    bookAppointment(appointment).then(onBook);
+  };
+
+  return (
+    <div>
+      <h2>Book Appointment</h2>
+      <input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Patient Name" />
+      <select value={appointmentType} onChange={(e) => setAppointmentType(e.target.value)}>
+        <option>Routine Check-Up</option>
+        <option>Ultrasound</option>
+      </select>
+      <button onClick={handleSubmit}>Confirm</button>
+    </div>
+  );
+};
