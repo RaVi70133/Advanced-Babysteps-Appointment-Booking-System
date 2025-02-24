@@ -1,0 +1,22 @@
+const SlotPicker = ({ doctor, date, onSelectSlot }) => {
+  const [slots, setSlots] = useState([]);
+
+  useEffect(() => {
+    if (doctor && date) {
+      fetchAvailableSlots(doctor._id, date).then(setSlots);
+    }
+  }, [doctor, date]);
+
+  return (
+    <div>
+      <h2>Available Slots for {doctor.name} on {date}</h2>
+      <ul>
+        {slots.map((slot) => (
+          <li key={slot} onClick={() => onSelectSlot(slot)}>
+            {slot}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
