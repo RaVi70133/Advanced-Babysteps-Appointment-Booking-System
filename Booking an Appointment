@@ -1,0 +1,8 @@
+const bookAppointment = async (appointment) => {
+  const response = await fetch(`/appointments`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(appointment),
+  });
+  return await response.json();
+};
