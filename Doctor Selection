@@ -1,0 +1,22 @@
+import { useState, useEffect } from "react";
+
+const DoctorList = ({ onSelectDoctor }) => {
+  const [doctors, setDoctors] = useState([]);
+
+  useEffect(() => {
+    fetch("/doctors").then(res => res.json()).then(setDoctors);
+  }, []);
+
+  return (
+    <div>
+      <h2>Select a Doctor</h2>
+      <ul>
+        {doctors.map((doc) => (
+          <li key={doc._id} onClick={() => onSelectDoctor(doc)}>
+            {doc.name}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
