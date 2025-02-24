@@ -1,0 +1,47 @@
+const express = require("express");
+const router = express.Router();
+const Doctor = require("../models/Doctor");
+const Appointment = require("../models/Appointment");
+const moment = require("moment");
+
+// Get all doctors
+router.get("/", async (req, res) => {
+  const doctors = await Doctor.find();
+  res.json(doctors);
+});
+
+// Get available slots for a doctor on a specific date
+router.get("/:id/slots", async (req, res) => {
+  const { id } = req.params;
+  const { date } = req.query; // Expected format: YYYY-MM-DD
+
+  const doctor = await Doctor.findById(id);
+  if (!doctor) return res.status(404).json({ error: "Doctor not found" });
+
+  const workingStart = moment(date + " " + doctor.workingHours.start, "YYYY-MM-DD HH:mm");
+  const workingEnd = moment(date + " " + doctor.workingHours.end, "YYYY-MM-DD HH:mm");
+  const slotDuration = 30; // Assume fixed slot duration
+
+  // Fetch booked appointments
+  const appointments = await Appointment.find({
+    doctorId: id,
+    date: { $gte: workingStart.toDate(), $lt: workingEnd.toDate() },
+  });
+
+  // Generate available slots
+  let slots = [];
+  let slot = workingStart.clone();
+  while (slot.isBefore(workingEnd)) {
+    const isBooked = appointments.some(app =>
+      moment(app.date).isSame(slot, "minute") ||
+      moment(app.date).isBetween(slot, slot.clone().add(slotDuration, "minutes"))
+    );
+
+    if (!isBooked) slots.push(slot.format("HH:mm"));
+    slot.add(slotDuration, "minutes");
+  }
+
+  res.json(slots);
+});
+
+module.exports = router;
