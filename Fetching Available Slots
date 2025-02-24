@@ -1,0 +1,5 @@
+const fetchAvailableSlots = async (doctorId, date) => {
+  const response = await fetch(`/doctors/${doctorId}/slots?date=${date}`);
+  const slots = await response.json();
+  return slots;
+};
