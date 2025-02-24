@@ -1,0 +1,32 @@
+router.post("/", async (req, res) => {
+  const { doctorId, date, duration, appointmentType, patientName, notes } = req.body;
+  const requestedTime = moment(date); // Ensure the date is in the correct format
+
+  // Check if doctor exists
+  const doctor = await Doctor.findById(doctorId);
+  if (!doctor) return res.status(404).json({ error: "Doctor not found" });
+
+  // Check if requested time is within doctor's working hours
+  const workStart = moment(requestedTime).startOf("day").add(doctor.workingHours.start, "hours");
+  const workEnd = moment(requestedTime).startOf("day").add(doctor.workingHours.end, "hours");
+
+  if (requestedTime.isBefore(workStart) || requestedTime.isAfter(workEnd)) {
+    return res.status(400).json({ error: "Appointment outside working hours" });
+  }
+
+  // Check if slot is available
+  const conflictingAppointment = await Appointment.findOne({
+    doctorId,
+    date: { $gte: requestedTime.toDate(), $lt: moment(requestedTime).add(duration, "minutes").toDate() }
+  });
+
+  if (conflictingAppointment) {
+    return res.status(400).json({ error: "Time slot already booked" });
+  }
+
+  // Create appointment
+  const newAppointment = new Appointment({ doctorId, date: requestedTime.toDate(), duration, appointmentType, patientName, notes });
+  await newAppointment.save();
+
+  res.status(201).json(newAppointment);
+});
